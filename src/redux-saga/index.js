@@ -42,8 +42,9 @@ export default function createSagaMiddleware() {
 							break;
 						case "CALL":
 							const { fn, args, context } = effect.payload;
-							//? 这里为什么一定是promise?
-							fn.apply(context, args).then(next);
+							// 使用Promise包裹,方便回调
+							Promise.resolve(fn.apply(context, args)).then(next);
+
 							break;
 						case "FORK":
 							// 使用run开启一个协程运行传入的generator

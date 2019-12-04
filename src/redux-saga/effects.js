@@ -40,3 +40,14 @@ export function* takeEvery(actionType, task) {
 		}
 	});
 }
+function delayP(ms, val) {
+	return new Promise((resolve) => {
+		setTimeout(() => {
+			resolve(val);
+		}, ms);
+	});
+}
+
+export function delay(...args) {
+	return call(delayP, ...args);
+}

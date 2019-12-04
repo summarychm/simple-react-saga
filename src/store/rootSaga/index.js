@@ -4,21 +4,14 @@ yield后的对象会传给sagaMiddleware中的run函数.
 import { ASYNC_INCREMENT } from "../action-types";
 import { increment } from "../actions";
 // import { take, put } from "redux-saga/effects";
-import { take, put, takeEvery } from "../../redux-saga/effects";
-// delay
+import { take, put, takeEvery, call, delay } from "../../redux-saga/effects";
 
-const delay = (ms) =>
-	new Promise((resolve, reject) => {
-		setTimeout(() => {
-			resolve();
-		}, ms);
-	});
 export function* incrementFn() {
-	yield delay(500);
+	yield delay(500, 555);
 	yield put(increment());
 }
 export default function* rootSaga() {
-	console.log("rootSaga run!");
+	yield call(console.log, "rootSaga run!");
 	yield takeEvery(ASYNC_INCREMENT, incrementFn);
 
 	// for (let i = 0; i < 3; i++) {
