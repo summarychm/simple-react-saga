@@ -14,7 +14,8 @@ export function put(action) {
 }
 
 /**
- * 构建callEffect对象
+ * 构建callEffect对象,支持2种形态
+ * call(fn, ...args) 和 call([context, fn], ...args)
  * @param {function} fn 要调用的fn
  * @param  {...any} args 调用fn时的参数
  */
@@ -25,6 +26,25 @@ export function call(fn, ...args) {
 		fn = fn[1];
 	}
 	return { type: "CALL", payload: { fn, context, args } };
+}
+/** 构建cpsEffect对象 支持2种形态
+ * cps(fn, ...args) 和 cps([context,fn], ...args)
+ * @param {function|array} fn fn或[context,fn]
+ * @param  {...any} args fn参数
+ */
+export function cps(fn, ...args) {
+	let context = null;
+	if (Array.isArray(fn)) {
+		// 支持context
+		context = fn[0];
+		fn = fn[1];
+	}
+	return {
+		type: "CPS",
+		context,
+		fn,
+		args,
+	};
 }
 
 export function fork(task) {

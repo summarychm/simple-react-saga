@@ -44,12 +44,16 @@ export default function createSagaMiddleware() {
 							const { fn, args, context } = effect.payload;
 							// 使用Promise包裹,方便回调
 							Promise.resolve(fn.apply(context, args)).then(next);
-
 							break;
 						case "FORK":
 							// 使用run开启一个协程运行传入的generator
 							run(effect.task);
 							next(); // 继续向下执行gen函数(同步)
+							break;
+						case "CPS":
+							const { fn: cbFn, args: cbArgs, context: cbContext } = effect;
+							// 将自执行器的next作为callback传入,在node风格函数执行完毕后执行next回调
+							cbFn.apply(cbContext, [...cbArgs, next]);
 							break;
 						default:
 							break;
