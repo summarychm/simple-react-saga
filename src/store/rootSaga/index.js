@@ -7,8 +7,14 @@ import { increment } from "../actions";
 import { take, put, takeEvery } from "../../redux-saga/effects";
 // delay
 
+const delay = (ms) =>
+	new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve();
+		}, ms);
+	});
 export function* incrementFn() {
-	console.log("111");
+	yield delay(500);
 	yield put(increment());
 }
 export default function* rootSaga() {

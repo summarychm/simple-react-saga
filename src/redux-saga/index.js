@@ -46,8 +46,6 @@ export default function createSagaMiddleware() {
 							fn.apply(context, args).then(next);
 							break;
 						case "FORK":
-							console.log("fork");
-
 							// 使用run开启一个协程运行传入的generator
 							run(effect.task);
 							next(); // 继续向下执行gen函数(同步)
