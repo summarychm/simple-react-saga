@@ -46,6 +46,9 @@ export function cps(fn, ...args) {
 		args,
 	};
 }
+export function all(fns) {
+	return { type: "ALL", fns };
+}
 
 export function fork(task) {
 	return { type: "FORK", task };

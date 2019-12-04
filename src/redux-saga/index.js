@@ -7,17 +7,30 @@ const EventEmitter = require("events");
 /** 创建一个saga中间件,并在其上挂载run方法,用于创建协程. */
 export default function createSagaMiddleware() {
 	const events = new EventEmitter();
+	/** 检测函数执行次数,到达目标次数执行回调
+	 * @param {function} cb 执行完毕回调
+	 * @param {number} total 目标执行次数
+	 */
+	function times(cb, total) {
+		let count = 0;
+		return () => {
+			if (++count === total) cb && cb();
+		};
+	}
+
 	let sagaMiddleware = ({ getState, dispatch }) => {
 		/** 开启一个新的generator协程
-		 * @param {generator/function} gen 要执行的generator对象(或生成generator的fn)
+		 * @param {generator/function} gen 要注册的generator对象(或生成generator的fn)
+		 * @param {function} callback 协程开启完毕回调
 		 */
-		function run(gen) {
+		function run(gen, callback) {
 			// 如果 gen 为生成器函数,则取其返回值
 			const it = typeof gen === "function" ? gen() : gen;
-			// generator 自执行器
+			// generator 自执行函数
 			function next(val) {
 				const { value: result, done } = it.next(val);
-				if (done) return;
+				// 如果协程注册完毕,则执行回调
+				if (done) return callback && callback();
 
 				if (typeof result[Symbol.iterator] === "function") {
 					// 如果result有遍历器属性,则使用run开启子协程,子协程有自己的流程控制.
@@ -55,12 +68,20 @@ export default function createSagaMiddleware() {
 							// 将自执行器的next作为callback传入,在node风格函数执行完毕后执行next回调
 							cbFn.apply(cbContext, [...cbArgs, next]);
 							break;
+						case "ALL":
+							const { fns } = effect;
+							const doneFn = times(next, fns.length);
+							for (let i = 0; i < fns.length; i++) {
+								const fn = fns[i];
+								run(fn, doneFn);
+							}
+							break;
 						default:
 							break;
 					}
 				}
 			}
-			next(); // 启动自执行器
+			next(); // 启动generator自执行函数
 		}
 		sagaMiddleware.run = run; // 将开启协程的方法挂载到saga中间件上
 
