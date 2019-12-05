@@ -63,7 +63,8 @@ export default function createSagaMiddleware() {
 							// 将自执行器的next作为callback传入,在node风格函数执行完毕后执行next回调
 							cbFn.apply(cbContext, [
 								...cbArgs,
-								(err, value) => {
+								function(err, value) {
+									if (arguments.length === 1) it.throw("callback回调参数必须大于1个");
 									// 处理错误传参
 									if (err) return it.return("发生错误!");
 									next(value);
@@ -85,7 +86,8 @@ export default function createSagaMiddleware() {
 							next(newTask); // 继续向下执行gen函数(同步)
 							break;
 						case "CANCEL":
-							effect.task.return("over");
+							const canVal = effect.task.return("over");
+							next(canVal);
 							break;
 						default:
 							break;
