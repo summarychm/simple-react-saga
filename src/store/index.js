@@ -9,8 +9,8 @@ const sagaMiddleware = createSagaMiddleware();
 // redux-devTools
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware)); //reduxLogger
+const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware, reduxLogger));
 const store = createStore(reducer, enhancer);
 sagaMiddleware.run(rootSaga);
-window.store = store; // 挂载到window方便调试
+window.store = store; // 方便调试
 export default store;

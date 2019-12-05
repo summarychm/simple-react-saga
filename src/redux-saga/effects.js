@@ -46,33 +46,66 @@ export function cps(fn, ...args) {
 		args,
 	};
 }
+/**
+ * all: 利用闭包+flag实现
+ * @param {*} fns 要执行的generator[]
+ */
 export function all(fns) {
 	return { type: "ALL", fns };
 }
 
-export function fork(task) {
-	return { type: "FORK", task };
+/**
+ * 通过sagaMiddleware.run来生成一个新协程
+ * @param {function} task saga函数
+ * @param  {...any} args saga所需参数
+ */
+export function fork(task, ...args) {
+	return { type: "FORK", task, args };
 }
+/**
+ * 利用迭代器自身的return方法实现
+ * @param {iterator} task saga对象
+ */
 export function cancel(task) {
 	return { type: "CANCEL", task };
 }
-export function* takeEvery(actionType, task) {
-	// fork + while(true) + take
+
+/**
+ * 非阻塞take 利用 fork + while(true) + take实现
+ * @param {string} actionType
+ * @param {function}} saga saga函数
+ * @param  {...any} args saga所需参数
+ */
+export function* takeEvery(actionType, saga, ...args) {
 	yield fork(function*() {
 		while (true) {
 			yield take(actionType);
-			yield task(); // 继续向下执行 不应该用call?
+			yield fork(saga, ...args);
 		}
 	});
 }
+/**
+ * 非阻塞take,只保留最后一次take,利用变量缓存迭代器对象的方式实现
+ * @param {string} actionType
+ * @param {function}} saga saga函数
+ * @param  {...any} args saga所需参数
+ */
+export function* takeLatest(actionType, saga, ...args) {
+	let lastTake;
+	while (true) {
+		yield take(actionType);
+		if (lastTake) yield cancel(lastTake);
+		lastTake = yield fork(saga, ...args);
+	}
+}
+export function delay(...args) {
+	return call(delayP, ...args);
+}
+
 function delayP(ms, val) {
 	return new Promise((resolve) => {
 		setTimeout(() => {
 			resolve(val);
 		}, ms);
 	});
-}
-
-export function delay(...args) {
-	return call(delayP, ...args);
 }

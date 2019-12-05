@@ -4,8 +4,7 @@ yield后的对象会传给sagaMiddleware中的run函数.
 
 import { ASYNC_INCREMENT, STOP_INCREMENT, AUTO_INCREMENT } from "../action-types";
 import { increment } from "../actions";
-// import { take, put } from "redux-saga/effects";
-import { take, put, takeEvery, call, delay, cps, all, fork, cancel } from "../../redux-saga/effects";
+import { all, take, takeEvery, put, call, delay, cps, fork, cancel } from "../../redux-saga/effects";
 
 const delayCallback = (ms, callback) => {
 	setTimeout(() => {
