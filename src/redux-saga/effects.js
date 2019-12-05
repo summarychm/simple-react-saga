@@ -53,7 +53,9 @@ export function all(fns) {
 export function fork(task) {
 	return { type: "FORK", task };
 }
-
+export function cancel(task) {
+	return { type: "CANCEL", task };
+}
 export function* takeEvery(actionType, task) {
 	// fork + while(true) + take
 	yield fork(function*() {

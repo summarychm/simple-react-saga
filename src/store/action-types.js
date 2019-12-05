@@ -1,2 +1,3 @@
 export const INCREMENT = "INCREMENT";
+export const STOP_INCREMENT = "STOP_INCREMENT";
 export const ASYNC_INCREMENT = "ASYNC_INCREMENT";

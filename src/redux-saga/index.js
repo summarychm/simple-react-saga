@@ -58,15 +58,17 @@ export default function createSagaMiddleware() {
 							// 使用Promise包裹,方便回调
 							Promise.resolve(fn.apply(context, args)).then(next);
 							break;
-						case "FORK":
-							// 使用run开启一个协程运行传入的generator
-							run(effect.task);
-							next(); // 继续向下执行gen函数(同步)
-							break;
 						case "CPS":
 							const { fn: cbFn, args: cbArgs, context: cbContext } = effect;
 							// 将自执行器的next作为callback传入,在node风格函数执行完毕后执行next回调
-							cbFn.apply(cbContext, [...cbArgs, next]);
+							cbFn.apply(cbContext, [
+								...cbArgs,
+								(err, value) => {
+									// 处理错误传参
+									if (err) return it.return("发生错误!");
+									next(value);
+								},
+							]);
 							break;
 						case "ALL":
 							const { fns } = effect;
@@ -75,6 +77,15 @@ export default function createSagaMiddleware() {
 								const fn = fns[i];
 								run(fn, doneFn);
 							}
+							break;
+						case "FORK":
+							// 使用run开启一个协程运行传入的generator
+							let newTask = effect.task();
+							run(newTask);
+							next(newTask); // 继续向下执行gen函数(同步)
+							break;
+						case "CANCEL":
+							effect.task.return("over");
 							break;
 						default:
 							break;
